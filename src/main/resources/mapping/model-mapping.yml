@@ -1,0 +1,36 @@
+models:
+  - model:
+      name: Generic
+      vendor: Logitech
+      filter: get("status") != null
+      node: devices
+      mapping:
+        type: ""
+        category: ""
+        serialNumber: at("/serial")?.asText()
+        deviceId: at("/id")?.asText()
+        deviceName: at("/name")?.asText() + " " + at("/serial")?.asText()
+        deviceMake: at("/type")?.asText()
+        deviceModel: ""
+        deviceOnline: at("/status")?.asText()?.toLowerCase().equals("online")
+      properties:
+        CreatedAt: at("/createdAt")
+        Version: at("/version")
+        MicPod#CountActual: at("/peripherals/micPod/count/actual")
+        MicPod#CountExpected: at("/peripherals/micPod/count/expected")
+        MicPod#CountUnavailable: at("/peripherals/micPod/count/expected").asInt() - at("/peripherals/micPod/count/actual").asInt()
+        Camera#CountExpected: at("/peripherals/camera/count/actual")
+        Camera#CountActual: at("/peripherals/camera/count/expected")
+        Camera#CountUnavailable: at("/peripherals/camera/count/expected").asInt() - at("/peripherals/camera/count/actual").asInt()
+  - model:
+      name: Place
+      vendor: Logitech
+      filter: false
+      node: devices
+      properties:
+        Place#ID: at("/id")
+        Place#Type: at("/type")
+        Place#Name: at("/name")
+        Place#Group: at("/group")
+        Place#Occupancy: at("/occupancy")
+        Place#CreatedAt: at("/createdAt")
