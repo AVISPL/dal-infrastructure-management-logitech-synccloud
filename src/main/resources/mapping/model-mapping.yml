@@ -5,12 +5,12 @@ models:
       filter: get("status") != null
       node: devices
       mapping:
-        type: ""
+        type: at("/type")?.asText()
         category: ""
         serialNumber: at("/serial")?.asText()
         deviceId: at("/id")?.asText()
-        deviceName: at("/name")?.asText() + " " + at("/serial")?.asText()
-        deviceMake: at("/type")?.asText()
+        deviceName: at("/name")?.asText()
+        deviceMake: ""
         deviceModel: ""
         deviceOnline: at("/status")?.asText()?.toLowerCase().equals("online")
       properties:

@@ -10,6 +10,7 @@ import com.avispl.symphony.api.dal.monitor.aggregator.Aggregator;
 import com.avispl.symphony.dal.aggregator.parser.AggregatedDeviceProcessor;
 import com.avispl.symphony.dal.aggregator.parser.PropertiesMapping;
 import com.avispl.symphony.dal.aggregator.parser.PropertiesMappingParser;
+import com.avispl.symphony.dal.communicator.data.Constants;
 import com.avispl.symphony.dal.communicator.http.LogiSyncCloudRequestInterceptor;
 import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -566,6 +567,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                         Map<String, String> deviceProperties = aggregatedDevice.getProperties();
                         deviceProperties.putAll(placeProperties);
                         formatProperties(deviceProperties);
+                        applyCatalog(aggregatedDevice);
 
                         retrievedDeviceIds.add(deviceId);
                         aggregatedDevices.put(deviceId, aggregatedDevice);
@@ -627,7 +629,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
      * This later can be extended to a yml mapping, for now it's a single property that we need to format, so consider
      * this a functional placeholder.
      *
-     * @param properties list of device properties to format
+     * @param properties map to format properties in
      * */
     private void formatProperties(Map<String, String> properties) {
         properties.forEach((name, value) -> {
@@ -637,6 +639,39 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         });
     }
 
+    /**
+     * Logi Sync does not provide full information on any given models, so we need to do this manually through
+     * statically defined catalog.
+     *
+     * @param device device to set catalog information for
+     * */
+    private void applyCatalog(AggregatedDevice device) {
+        String deviceType = device.getType();
+        String deviceName = device.getDeviceName();
+
+        Map<String, Constants.CatalogEntry> catalogSection = Constants.Catalog.CATALOG.get(deviceType);
+        Optional<Constants.CatalogEntry> catalogEntry;
+        if (deviceType.equals(Constants.Catalog.COMPUTER_SECTION) || deviceType.equals(Constants.Catalog.GENERIC_SECTION)) {
+            catalogEntry = Optional.of(catalogSection.get(""));
+        } else {
+            catalogEntry = catalogSection.entrySet().stream().filter(entry -> entry.getKey().equalsIgnoreCase(deviceName)).findFirst().map(Map.Entry::getValue);
+        }
+
+        if (!catalogEntry.isPresent()) {
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("Unable to find catalog entry for type %s and name %s, skipping.", deviceType, deviceName));
+            }
+            device.setDeviceName(deviceName + " " + device.getSerialNumber());
+            return;
+        }
+        catalogEntry.ifPresent(entry -> {
+            device.setType(entry.getType());
+            device.setDeviceMake(entry.getManufacturer());
+            device.setDeviceModel(entry.getModel());
+            device.setCategory(entry.getCategory());
+            device.setDeviceName(entry.getModel() + " " + device.getSerialNumber());
+        });
+    }
     /**
      * Update the status of the device.
      * The device is considered as paused if did not receive any retrieveMultipleStatistics()
