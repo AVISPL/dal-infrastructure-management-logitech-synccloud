@@ -33,9 +33,13 @@ public class LogiSyncCloudRequestInterceptor implements ClientHttpRequestInterce
             }
             response = execution.execute(request, body);
         }
-        if (response.getRawStatusCode() == 403) {
+        if (response.getRawStatusCode() == 401) {
             // Throw an error here, pick it up later in {@link LogiSyncCloudCommunicator} and propagate to UI.
             String errorMessage = "Unable to authorize, please check certificate and privateKey provided.";
+            throw new ResourceNotReachableException(errorMessage, new FailedLoginException(errorMessage));
+        } else if (response.getRawStatusCode() == 403) {
+            // Throw an error here, pick it up later in {@link LogiSyncCloudCommunicator} and propagate to UI.
+            String errorMessage = "Unable to authorize, your organization is not Logitech Select enabled or your client certificate is either expired or deactivated.";
             throw new ResourceNotReachableException(errorMessage, new FailedLoginException(errorMessage));
         }
         return response;
