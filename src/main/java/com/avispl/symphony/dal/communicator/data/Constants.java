@@ -160,6 +160,7 @@ public interface Constants {
         String ADAPTER_BUILD_DATE = "AdapterBuildDate";
         String ADAPTER_UPTIME_MIN = "AdapterUptime(min)";
         String ADAPTER_UPTIME = "AdapterUptime";
+        String ADAPTER_RUNNER_SIZE = "RunnerSize(b)";
     }
 
     /**

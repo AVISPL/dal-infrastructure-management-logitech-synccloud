@@ -502,7 +502,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
 
         statistics.put(Constants.Properties.ADAPTER_VERSION, adapterProperties.getProperty("aggregator.version"));
         statistics.put(Constants.Properties.ADAPTER_BUILD_DATE, adapterProperties.getProperty("aggregator.build.date"));
-        dynamicStatistics.put("RuntimeRunnerSize(b)", String.valueOf(ClassLayout.parseInstance(this).toPrintable().length()));
+        dynamicStatistics.put(Constants.Properties.ADAPTER_RUNNER_SIZE, String.valueOf(ClassLayout.parseInstance(this).toPrintable().length()));
 
         long adapterUptime = System.currentTimeMillis() - adapterInitializationTimestamp;
         statistics.put(Constants.Properties.ADAPTER_UPTIME_MIN, String.valueOf(adapterUptime / (1000*60)));
