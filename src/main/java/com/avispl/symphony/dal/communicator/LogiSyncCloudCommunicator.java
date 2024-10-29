@@ -44,7 +44,13 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
- * Communicator details
+ * Logi Sync Cloud API communicator, it's communicating with {@link Constants.URI} endpoints to receive places and devices details.
+ * Currently, the following data is monitored:
+ * - Device metadata
+ * - Device basic status information
+ * - Device place (location)
+ * - Device peripherals
+ *
  * @author Maksym.Rossitsev/Symphony Team
  * @since 1.0.0
  */
@@ -239,6 +245,9 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
     }
 
 
+    /**
+     * LogiSyncCloudCommunicator constructor. Initializes properties processor, device metadata and device data loader
+     * */
     public LogiSyncCloudCommunicator() throws IOException {
         Map<String, PropertiesMapping> mapping = new PropertiesMappingParser().loadYML("mapping/model-mapping.yml", getClass());
         aggregatedDeviceProcessor = new AggregatedDeviceProcessor(mapping);
@@ -545,6 +554,13 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         //Authentication is performed during the init() stage
     }
 
+    /**
+     * Fetching logi devices list from {@link Constants.URI#PLACES} endpoint.
+     * The page size is specified with {@link #placeRetrievalPageSize}, data is pulled until all information is retrieved.
+     * If multiple organizations are in play - requests are paced by {@link #placeRetrievalTimeout} value
+     *
+     * @throws Exception if any error occurs
+     * */
     private synchronized void fetchDevicesList() throws Exception {
         String continuationToken = "";
 
