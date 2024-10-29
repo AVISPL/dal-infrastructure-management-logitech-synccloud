@@ -60,7 +60,8 @@ jobs:
         original_file="${{ steps.getfilename.outputs.file }}"
         new_file="${original_file/-jar-with-dependencies/}"
         echo "new_file=${new_file}" >> $GITHUB_ENV
-    - uses: actions/upload-artifact@v4
+    - name: Upload file to archive
+      uses: actions/upload-artifact@v4
       with:
         name: LogiSyncCloudAggregator
         path: ${{ steps.getfilename.outputs.new_file }}
