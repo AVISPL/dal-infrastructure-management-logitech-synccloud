@@ -34,7 +34,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
     - id: version
-      run: echo "version=${{ needs.prep.outputs.ver }}-${{ needs.prep.outputs.date }}-${{ needs.prep.outputs.rev }}-jar-with-dependencies" >> $GITHUB_OUTPUT
+      run: echo "version=${{ needs.prep.outputs.ver }}-${{ needs.prep.outputs.date }}-${{ needs.prep.outputs.rev }}" >> $GITHUB_OUTPUT
   build:
     runs-on: ubuntu-latest
     needs: versiongenerate
@@ -53,7 +53,7 @@ jobs:
     - name: PMD check
       run: mvn pmd:check
     - id: getfilename
-      run: echo "file=$(ls target/symphony-dal-infrastructure-management-logi-synccloud-${{ needs.versiongenerate.outputs.version }}.jar)" >> $GITHUB_OUTPUT
+      run: echo "file=$(ls target/symphony-dal-infrastructure-management-logi-synccloud-${{ needs.versiongenerate.outputs.version }}-jar-with-dependencies.jar)" >> $GITHUB_OUTPUT
     - name: Remove suffix from filename
       id: rename_file
       run: |
