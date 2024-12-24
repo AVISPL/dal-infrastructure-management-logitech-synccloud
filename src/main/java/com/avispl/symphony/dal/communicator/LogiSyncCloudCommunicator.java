@@ -527,9 +527,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         if (organizationIds.isEmpty()) {
             throw new IllegalArgumentException("Monitoring Error: organization id is missing, please check organizationIds configuration parameter");
         }
-        if (latestError != null) {
-            throw latestError;
-        }
         nextDevicesCollectionIterationTimestamp = System.currentTimeMillis();
         updateValidRetrieveStatisticsTimestamp();
 
@@ -538,7 +535,10 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
             aggregatedDevice.setTimestamp(System.currentTimeMillis());
         }
 
-            return aggregatedDeviceList;
+        if (latestError != null) {
+            throw latestError;
+        }
+        return aggregatedDeviceList;
     }
 
     @Override
