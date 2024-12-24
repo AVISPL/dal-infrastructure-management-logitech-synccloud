@@ -201,7 +201,9 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                     int aggregatedDevicesCount = aggregatedDevices.size();
                     if (aggregatedDevicesCount == 0) {
                         logDebugMessage("No devices collected in the main data collection thread so far. Continuing.");
-                        continue mainloop;
+                        // We shouldn't just continue here because we'll exhaust 14000 daily requests too quickly.
+                        // Need to continue with a normal pace.
+                        //continue mainloop;
                     }
 
                     while (nextDevicesCollectionIterationTimestamp > System.currentTimeMillis()) {
