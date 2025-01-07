@@ -1,6 +1,6 @@
 {
   "Logitech": {
-    "MeetUp": {"type": "Computer", "category": "MTR", "manufacturer": "Logitech", "model": "Logitech MeetUp MTR"},
+    "MeetUp": {"type": "Computer", "category": "MTR", "manufacturer": "Logitech", "model": "MeetUp MTR"},
     "Rally": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally"},
     "Rally Bar": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally Bar"},
     "Rally Bar Huddle": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally Bar Huddle"},
