@@ -14,9 +14,19 @@ import com.avispl.symphony.dal.communicator.data.Constants;
 import com.avispl.symphony.dal.communicator.http.LogiSyncCloudRequestInterceptor;
 import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
+import org.apache.hc.core5.pool.PoolReusePolicy;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -482,9 +492,26 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
     @Override
     protected RestTemplate obtainRestTemplate() throws Exception {
         RestTemplate restTemplate = super.obtainRestTemplate();
-        SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
+        DefaultClientTlsStrategy tlsStrategy = new DefaultClientTlsStrategy(sslContext);
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setTlsSocketStrategy(tlsStrategy)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(Timeout.ofMinutes(1))
+                        .build())
+                .setPoolConcurrencyPolicy(PoolConcurrencyPolicy.STRICT)
+                .setConnPoolPolicy(PoolReusePolicy.LIFO)
+                .setDefaultConnectionConfig(ConnectionConfig.custom()
+                        .setSocketTimeout(Timeout.ofMinutes(1))
+                        .setConnectTimeout(Timeout.ofMinutes(1))
+                        .setTimeToLive(TimeValue.ofMinutes(10))
+                        .build())
+                .build();
+
         CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLSocketFactory(socketFactory)
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(StandardCookieSpec.STRICT)
+                        .build())
                 .build();
 
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
