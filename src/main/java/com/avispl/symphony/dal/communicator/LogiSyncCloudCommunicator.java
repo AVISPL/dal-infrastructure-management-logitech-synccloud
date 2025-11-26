@@ -33,7 +33,6 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.openjdk.jol.info.ClassLayout;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
@@ -540,8 +539,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
 
         statistics.put(Constants.Properties.ADAPTER_VERSION, adapterProperties.getProperty("aggregator.version"));
         statistics.put(Constants.Properties.ADAPTER_BUILD_DATE, adapterProperties.getProperty("aggregator.build.date"));
-        dynamicStatistics.put(Constants.Properties.ADAPTER_RUNNER_SIZE, String.valueOf(ClassLayout.parseInstance(this).toPrintable().length()));
-
         long adapterUptime = System.currentTimeMillis() - adapterInitializationTimestamp;
         statistics.put(Constants.Properties.ADAPTER_UPTIME_MIN, String.valueOf(adapterUptime / (1000*60)));
         statistics.put(Constants.Properties.ADAPTER_UPTIME, normalizeUptime(adapterUptime/1000));

@@ -10,18 +10,33 @@ models:
         serialNumber: at("/serial")?.asText()
         deviceId: at("/id")?.asText()
         deviceName: at("/name")?.asText()
+        macAddresses: at("/network/mac")
         deviceMake: ""
         deviceModel: ""
         deviceOnline: at("/status")?.asText()?.toLowerCase().equals("online")
       properties:
         CreatedAt: at("/createdAt")
         Version: at("/version")
-        MicPod#CountActual: at("/peripherals/micPod/count/actual")
-        MicPod#CountExpected: at("/peripherals/micPod/count/expected")
+        HealthStatus: at("/healthStatus")
+        MicPod#CountActual: at("/peripherals/micPod/count/actual").asInt()
+        MicPod#CountExpected: at("/peripherals/micPod/count/expected").asInt()
         MicPod#CountUnavailable: at("/peripherals/micPod/count/expected").asInt() - at("/peripherals/micPod/count/actual").asInt()
-        Camera#CountExpected: at("/peripherals/camera/count/actual")
-        Camera#CountActual: at("/peripherals/camera/count/expected")
+        Camera#CountExpected: at("/peripherals/camera/count/actual").asInt()
+        Camera#CountActual: at("/peripherals/camera/count/expected").asInt()
         Camera#CountUnavailable: at("/peripherals/camera/count/expected").asInt() - at("/peripherals/camera/count/actual").asInt()
+        Network#IPAddress: at("/network/ip")
+        Network#MACAddress: at("/network/mac")
+        Network#HostName: at("/network/hostName")
+        Network#WiredMode: at("/network/wired/mode")
+        Network#WiredAddress: at("/network/wired/address")
+        Network#WiredGateway: at("/network/wired/gateway")
+        Network#WiredSubnetMask: at("/network/wired/subnetMask")
+        Network#WiredDNS: at("/network/wired/dns").asText().replaceAll("[^.,A-Za-z0-9()]", "")
+        Network#WirelessMode: at("/network/wireless/mode")
+        Network#WirelessAddress: at("/network/wireless/address")
+        Network#WirelessGateway: at("/network/wireless/gateway")
+        Network#WirelessSubnetMask: at("/network/wireless/subnetMask")
+        Network#WirelessDNS: at("/network/wireless/dns").asText().replaceAll("[^.,A-Za-z0-9()]", "")
   - model:
       name: Place
       vendor: Logitech
@@ -34,3 +49,4 @@ models:
         Place#Group: at("/group")
         Place#Occupancy: at("/occupancy")
         Place#CreatedAt: at("/createdAt")
+        Place#SeatCount: at("/seatCount")
