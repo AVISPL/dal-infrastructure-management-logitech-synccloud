@@ -603,7 +603,13 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                 List<AggregatedDevice> placeDevices = null;
                 for (JsonNode room : response.at(Constants.URI.FIELD_PLACES)) {
                     Map<String, String> placeProperties = new HashMap<>();
-                    aggregatedDeviceProcessor.applyProperties(placeProperties, room, Constants.MappingModels.PLACE);
+                    placeProperties.put("Place#ID", room.at("/id").asText());
+                    placeProperties.put("Place#Type", room.at("/type").asText());
+                    placeProperties.put("Place#Name", room.at("/name").asText());
+                    placeProperties.put("Place#Group", room.at("/group").asText());
+                    placeProperties.put("Place#Occupancy", room.at("/occupancy").asText());
+                    placeProperties.put("Place#CreatedAt", room.at("/createdAt").asText());
+                    placeProperties.put("Place#SeatCount", room.at("/seatCount").asText());
 
                     placeDevices = aggregatedDeviceProcessor.extractDevices(room);
                     placeDevices.forEach(aggregatedDevice -> {
