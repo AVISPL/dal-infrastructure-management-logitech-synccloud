@@ -709,10 +709,10 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
             return;
         }
         catalogEntry.ifPresent(entry -> {
-            device.setType(entry.getType());
+            device.setType(entry.getCategory());
             device.setDeviceMake(entry.getManufacturer());
             device.setDeviceModel(entry.getModel());
-            device.setCategory(entry.getCategory());
+            device.setCategory(entry.getType());
             device.setDeviceName(entry.getModel() + " " + device.getSerialNumber());
         });
     }
