@@ -161,6 +161,14 @@ public interface Constants {
         String ADAPTER_UPTIME_MIN = "AdapterUptime(min)";
         String ADAPTER_UPTIME = "AdapterUptime";
         String ADAPTER_RUNNER_SIZE = "RunnerSize(B)";
+
+        String PLACE_ID = "Place#ID";
+        String PLACE_TYPE = "Place#Type";
+        String PLACE_NAME = "Place#Name";
+        String PLACE_GROUP = "Place#Group";
+        String PLACE_OCCUPANCY = "Place#Occupancy";
+        String PLACE_CREATED_AT = "Place#CreatedAt";
+        String PLACE_SEAT_COUNT = "Place#SeatCount";
     }
 
     /**
