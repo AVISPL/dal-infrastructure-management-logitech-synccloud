@@ -8,7 +8,7 @@
     "Rally Camera": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally Camera"},
     "Rally Plus": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally Plus"},
     "Rally Board 65": {"type": "Single Codecs", "category": "Codecs", "manufacturer": "Logitech", "model": "Rally Board 65"},
-    "Spot": {"type": "AV Devices", "category": "Sensors", "manufacturer": "Logitech", "model": "Spot"},
+    "Spot": {"type": "AV Devices", "category": "Sensor", "manufacturer": "Logitech", "model": "Spot"},
     "RoomMate": {"type": "Desktop", "category": "Computer", "manufacturer": "Logitech", "model": "RoomMate"},
     "Sight": {"type": "Camera", "category": "AV Devices", "manufacturer": "Logitech", "model": "Sight"},
     "Scribe": {"type": "Camera", "category": "AV Devices", "manufacturer": "Logitech", "model": "Scribe"},
