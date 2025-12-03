@@ -26,7 +26,7 @@ models:
       properties:
         CreatedAt: at("/createdAt")
         Version: at("/version")
-        HealthStatus: at("/healthStatus")
+        HealthStatus: at("/healthStatus").asText().replaceAll("(?<=[A-Za-z])(?=[A-Z][a-z])", " ")
         Sensors#LatestTimestamp: at("/sensors/latestTs")
         PeripheralMicPod#CountActual: at("/peripherals/micPod").isMissingNode()?"":at("/peripherals/micPod/count/actual").asInt()
         PeripheralMicPod#CountExpected: at("/peripherals/micPod").isMissingNode()?"":at("/peripherals/micPod/count/expected").asInt()
