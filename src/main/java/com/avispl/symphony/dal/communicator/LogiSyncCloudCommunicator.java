@@ -490,6 +490,9 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
 
     @Override
     protected RestTemplate obtainRestTemplate() throws Exception {
+        if (sslContext == null) {
+            throw new IllegalArgumentException("Unable to initialize mTLS sslContext: Please check apiKey and apiCertificate adapter properties.");
+        }
         RestTemplate restTemplate = super.obtainRestTemplate();
         DefaultClientTlsStrategy tlsStrategy = new DefaultClientTlsStrategy(sslContext);
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
