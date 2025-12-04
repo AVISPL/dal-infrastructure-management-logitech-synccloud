@@ -154,6 +154,7 @@ public interface Constants {
      */
     interface Properties {
         String CREATED_AT = "CreatedAt";
+        String DNS = "DNS";
         String MONITORED_DEVICES_TOTAL = "MonitoredDevicesTotal";
         String MONITORING_CYCLE_DURATION = "LastMonitoringCycleDuration(s)";
         String ADAPTER_VERSION = "AdapterVersion";
