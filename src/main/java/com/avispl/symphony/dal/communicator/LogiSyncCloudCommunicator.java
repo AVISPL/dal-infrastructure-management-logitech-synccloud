@@ -683,8 +683,16 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
      * */
     private void formatProperties(Map<String, String> properties) {
         properties.forEach((name, value) -> {
+            if (StringUtils.isNullOrEmpty(value)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(String.format("Unable to format property %s: missing value.", name));
+                }
+                return;
+            }
             if (name.endsWith(Constants.Properties.CREATED_AT)) {
                 properties.put(name, String.valueOf(new Date(Long.parseLong(value))));
+            } else if (name.endsWith(Constants.Properties.DNS)) {
+                properties.put(name, value.replaceAll("[^.,A-Za-z0-9()]", ""));
             }
         });
     }

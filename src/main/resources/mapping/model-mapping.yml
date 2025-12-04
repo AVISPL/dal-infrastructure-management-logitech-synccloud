@@ -59,12 +59,12 @@ models:
         Network#WiredIPAddress: at("/network/wired/address")
         Network#WiredGateway: at("/network/wired/gateway")
         Network#WiredSubnetMask: at("/network/wired/subnetMask")
-        Network#WiredDNS: at("/network/wired/dns").toString().replaceAll("[^.,A-Za-z0-9()]", "")
+        Network#WiredDNS: at("/network/wired/dns")
         Network#WirelessMode: at("/network/wireless/mode")
         Network#WirelessIPAddress: at("/network/wireless/address")
         Network#WirelessGateway: at("/network/wireless/gateway")
         Network#WirelessSubnetMask: at("/network/wireless/subnetMask")
-        Network#WirelessDNS: at("/network/wireless/dns").toString().replaceAll("[^.,A-Za-z0-9()]", "")
+        Network#WirelessDNS: at("/network/wireless/dns")
         Network#WirelessSSID: at("/network/wireless/ssid").asText()
   - model:
       name: Place
