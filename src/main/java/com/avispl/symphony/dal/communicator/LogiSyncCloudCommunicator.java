@@ -366,7 +366,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
      * @param placeRetrievalPageSize new value of {@link #placeRetrievalPageSize}
      */
     public void setPlaceRetrievalPageSize(int placeRetrievalPageSize) {
-        this.placeRetrievalPageSize = placeRetrievalPageSize;
+        this.placeRetrievalPageSize = placeRetrievalPageSize < 1 ? 1 : Math.min(placeRetrievalPageSize, 1000);
     }
 
     /**
