@@ -1,0 +1,81 @@
+models:
+  - model:
+      name: Generic
+      vendor: Logitech
+      filter: get("status") != null
+      node: devices
+      mapping:
+        type: at("/type")?.asText()
+        category: ""
+        serialNumber: at("/serial")?.asText()
+        deviceId: at("/id")?.asText()
+        deviceName: at("/name")?.asText()
+        macAddresses: at("/network/mac")
+        deviceMake: ""
+        deviceModel: ""
+        deviceOnline: at("/status")?.asText()?.toLowerCase().equals("online")
+      dynamicStatistics:
+        Sensors#CO2(ppm): at("/sensors/co2").asText()
+        Sensors#Pressure(Pa): at("/sensors/pressure").asText()
+        Sensors#Temperature(C): at("/sensors/temperature").asText()
+        Sensors#Humidity(%): at("/sensors/humidity").asText()
+        Sensors#TVOC(ppb): at("/sensors/tvoc").asText()
+        Sensors#PM10(mcg/m3): at("/sensors/pm10").asText()
+        Sensors#PM25(mcg/m3): at("/sensors/pm25").asText()
+        Sensors#Presence: at("/sensors/presence").asText()
+      properties:
+        CreatedAt: at("/createdAt")
+        Version: at("/version")
+        HealthStatus: at("/healthStatus").asText().replaceAll("(?<=[A-Za-z])(?=[A-Z][a-z])", " ")
+        Sensors#LatestTimestamp: at("/sensors/latestTs")
+        PeripheralMicPod#CountActual: at("/peripherals/micPod/count/actual").asInt()
+        PeripheralMicPod#CountExpected: at("/peripherals/micPod/count/expected").asInt()
+        PeripheralMicPod#CountUnavailable: at("/peripherals/micPod/count/expected").asInt() - at("/peripherals/micPod/count/actual").asInt()
+
+        PeripheralMicPodHub#CountActual: at("/peripherals/micPodHub/count/actual").asInt()
+        PeripheralMicPodHub#CountExpected: at("/peripherals/micPodHub/count/expected").asInt()
+        PeripheralMicPodHub#CountUnavailable: at("/peripherals/micPodHub/count/expected").asInt() - at("/peripherals/micPodHub/count/actual").asInt()
+
+        PeripheralSpeaker#CountActual: at("/peripherals/speaker/count/actual").asInt()
+        PeripheralSpeaker#CountExpected: at("/peripherals/speaker/count/expected").asInt()
+        PeripheralSpeaker#CountUnavailable: at("/peripherals/speaker/count/expected").asInt() - at("/peripherals/speaker/count/actual").asInt()
+
+        PeripheralTableHub#CountActual: at("/peripherals/tableHub/count/actual").asInt()
+        PeripheralTableHub#CountExpected: at("/peripherals/tableHub/count/expected").asInt()
+        PeripheralTableHub#CountUnavailable: at("/peripherals/tableHub/count/expected").asInt() - at("/peripherals/tableHub/count/actual").asInt()
+
+        PeripheralDisplayHub#CountActual: at("/peripherals/displayHub/count/actual").asInt()
+        PeripheralDisplayHub#CountExpected: at("/peripherals/displayHub/count/expected").asInt()
+        PeripheralDisplayHub#CountUnavailable: at("/peripherals/displayHub/count/expected").asInt() - at("/peripherals/displayHub/count/actual").asInt()
+
+        PeripheralCamera#CountExpected: at("/peripherals/camera/count/expected").asInt()
+        PeripheralCamera#CountActual: at("/peripherals/camera/count/actual").asInt()
+        PeripheralCamera#CountUnavailable: at("/peripherals/camera/count/expected").asInt() - at("/peripherals/camera/count/actual").asInt()
+
+        Network#IPAddress: at("/network/ip")
+        Network#MACAddress: at("/network/mac")
+        Network#HostName: at("/network/hostName")
+        Network#WiredMode: at("/network/wired/mode")
+        Network#WiredIPAddress: at("/network/wired/address")
+        Network#WiredGateway: at("/network/wired/gateway")
+        Network#WiredSubnetMask: at("/network/wired/subnetMask")
+        Network#WiredDNS: at("/network/wired/dns")
+        Network#WirelessMode: at("/network/wireless/mode")
+        Network#WirelessIPAddress: at("/network/wireless/address")
+        Network#WirelessGateway: at("/network/wireless/gateway")
+        Network#WirelessSubnetMask: at("/network/wireless/subnetMask")
+        Network#WirelessDNS: at("/network/wireless/dns")
+        Network#WirelessSSID: at("/network/wireless/ssid").asText()
+  - model:
+      name: Place
+      vendor: Logitech
+      filter: false
+      node: devices
+      properties:
+        Place#ID: at("/id")
+        Place#Type: at("/type")
+        Place#Name: at("/name")
+        Place#Group: at("/group")
+        Place#Occupancy: at("/occupancy")
+        Place#CreatedAt: at("/createdAt")
+        Place#SeatCount: at("/seatCount")
