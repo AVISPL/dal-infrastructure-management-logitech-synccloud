@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 AVI-SPL, Inc. All Rights Reserved.
  */
-package com.avispl.symphony.dal.communicator.data;
+package com.avispl.symphony.dal.communicator.logi.sync.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -156,12 +156,12 @@ public interface Constants {
         String CREATED_AT = "CreatedAt";
         String DNS = "DNS";
         String MONITORED_DEVICES_TOTAL = "MonitoredDevicesTotal";
-        String MONITORING_CYCLE_DURATION = "LastMonitoringCycleDuration(s)";
+        String MONITORING_CYCLE_DURATION = "LastMonitoringCycleDuration(sec)";
         String ADAPTER_VERSION = "AdapterVersion";
         String ADAPTER_BUILD_DATE = "AdapterBuildDate";
         String ADAPTER_UPTIME_MIN = "AdapterUptime(min)";
         String ADAPTER_UPTIME = "AdapterUptime";
-        String ADAPTER_RUNNER_SIZE = "RunnerSize(B)";
+        String MONITORING_CYCLE_INTERVAL = "MonitoringCycleInterval(min)";
 
         String PLACE_ID = "Place#ID";
         String PLACE_TYPE = "Place#Type";

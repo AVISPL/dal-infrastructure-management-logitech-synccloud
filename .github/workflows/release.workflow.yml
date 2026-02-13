@@ -6,6 +6,7 @@ on:
       - main
       - 'release/**'
       - 'bugfix/**'
+      - 'hotfix/**'
 jobs:
   prep:
     runs-on: ubuntu-latest

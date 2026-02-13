@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 AVI-SPL, Inc. All Rights Reserved.
  */
-package com.avispl.symphony.dal.communicator;
+package com.avispl.symphony.dal.communicator.logi.sync;
 
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
@@ -11,22 +11,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 
-import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AggregatorCommunicatorTest {
+class AggregatorCommunicatorTest {
 
     LogiSyncCloudCommunicator communicator;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         communicator = new LogiSyncCloudCommunicator();
-        communicator.setHost("api.sync.logitech.com");
-        communicator.setProtocol("https");
-        communicator.setPingProtocol("TCP");
+        communicator.setHost("");
+        communicator.setProtocol("");
+        communicator.setPingProtocol("");
         communicator.setPingTimeout(1000);
         communicator.setPort(443);
 
@@ -40,7 +39,7 @@ public class AggregatorCommunicatorTest {
     }
 
     @Test
-    public void testGetMultipleStatistics() throws Exception {
+    void testGetMultipleStatistics() throws Exception {
         communicator.getMultipleStatistics();
         communicator.setOrganizationIds("...");
         communicator.retrieveMultipleStatistics();
@@ -61,7 +60,7 @@ public class AggregatorCommunicatorTest {
     }
 
     @Test
-    public void testRetrieveMultipleStatistics() throws Exception {
+    void testRetrieveMultipleStatistics() throws Exception {
         communicator.setOrganizationIds("...");
         communicator.retrieveMultipleStatistics();
         Thread.sleep(30000);
@@ -86,7 +85,7 @@ public class AggregatorCommunicatorTest {
     }
 
     @Test
-    public void testRetrieveMultipleStatisticsWithoutOrganizationId() throws Exception {
+    void testRetrieveMultipleStatisticsWithoutOrganizationId() throws Exception {
         assertThrows(IllegalArgumentException.class, ()->communicator.retrieveMultipleStatistics());
     }
 }
