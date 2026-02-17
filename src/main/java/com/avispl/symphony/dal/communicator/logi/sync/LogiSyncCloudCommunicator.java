@@ -217,7 +217,8 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                         }
                         logger.error("Error occurred during device list retrieval: " + e.getMessage(), e);
                     }
-
+                    
+                    lastMonitoringCycleDuration = Math.max((System.currentTimeMillis() - startCycle) / 1000, 1L);
                     if (!inProgress) {
                         logDebugMessage("The data collection thread is not in progress. Breaking the loop.");
                         break mainloop;
@@ -243,7 +244,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                     // launches devices detailed statistics collection
                     nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + (getMonitoringRate() * 60000L);
 
-                    lastMonitoringCycleDuration = Math.max((System.currentTimeMillis() - startCycle) / 1000, 1L);
                     logDebugMessage("Finished collecting devices statistics cycle at " + new Date() + ", total duration: " + lastMonitoringCycleDuration);
                 } catch (Exception e) {
                     logger.error("Unexpected error occurred during main device collection cycle", e);
