@@ -242,7 +242,11 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                     // We don't want to fetch devices statuses too often, so by default it's currentTime + 60s
                     // otherwise - the variable is reset by the retrieveMultipleStatistics() call, which
                     // launches devices detailed statistics collection
-                    nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + (getMonitoringRate() * 60000L);
+                    try {
+                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + 60000L;
+                    } catch (NoSuchMethodError nsme) {
+                        logger.warn("Unsupported feature: getMonitoringRate isn't available on current Cloud Connector version.", nsme);
+                    }
 
                     logDebugMessage("Finished collecting devices statistics cycle at " + new Date() + ", total duration: " + lastMonitoringCycleDuration);
                 } catch (Exception e) {
@@ -515,7 +519,11 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         long adapterUptime = System.currentTimeMillis() - adapterInitializationTimestamp;
         statistics.put(Constants.Properties.ADAPTER_UPTIME_MIN, String.valueOf(adapterUptime / (1000*60)));
         statistics.put(Constants.Properties.ADAPTER_UPTIME, normalizeUptime(adapterUptime/1000));
-        statistics.put(Constants.Properties.MONITORING_CYCLE_INTERVAL, String.valueOf(getMonitoringRate()));
+        try {
+            statistics.put(Constants.Properties.MONITORING_CYCLE_INTERVAL, String.valueOf(getMonitoringRate()));
+        } catch (NoSuchMethodError nsme) {
+            logger.warn("Unsupported feature: getMonitoringRate isn't available on current Cloud Connector version.", nsme);
+        }
 
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setDynamicStatistics(dynamicStatistics);
