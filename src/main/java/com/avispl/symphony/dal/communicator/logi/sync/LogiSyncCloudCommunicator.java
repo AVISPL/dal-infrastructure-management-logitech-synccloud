@@ -243,8 +243,9 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                     // otherwise - the variable is reset by the retrieveMultipleStatistics() call, which
                     // launches devices detailed statistics collection
                     try {
-                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + 60000L;
+                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + (getMonitoringRate() * 60000L);
                     } catch (NoSuchMethodError nsme) {
+                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + 60000L;
                         logger.warn("Unsupported feature: getMonitoringRate isn't available on current Cloud Connector version.", nsme);
                     }
 
