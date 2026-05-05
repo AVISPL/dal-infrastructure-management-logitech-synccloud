@@ -1,19 +1,41 @@
 /*
  * Copyright (c) 2024 AVI-SPL, Inc. All Rights Reserved.
  */
-package com.avispl.symphony.dal.communicator;
-import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
-import com.avispl.symphony.api.dal.dto.monitor.Statistics;
-import com.avispl.symphony.api.dal.dto.monitor.aggregator.AggregatedDevice;
-import com.avispl.symphony.api.dal.monitor.Monitorable;
-import com.avispl.symphony.api.dal.monitor.aggregator.Aggregator;
-import com.avispl.symphony.dal.aggregator.parser.AggregatedDeviceProcessor;
-import com.avispl.symphony.dal.aggregator.parser.PropertiesMapping;
-import com.avispl.symphony.dal.aggregator.parser.PropertiesMappingParser;
-import com.avispl.symphony.dal.communicator.data.Constants;
-import com.avispl.symphony.dal.communicator.http.LogiSyncCloudRequestInterceptor;
-import com.avispl.symphony.dal.util.StringUtils;
+package com.avispl.symphony.dal.communicator.logi.sync;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
@@ -33,24 +55,19 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
-import javax.net.ssl.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
+import com.avispl.symphony.api.dal.dto.monitor.Statistics;
+import com.avispl.symphony.api.dal.dto.monitor.aggregator.AggregatedDevice;
+import com.avispl.symphony.api.dal.monitor.Monitorable;
+import com.avispl.symphony.api.dal.monitor.aggregator.Aggregator;
+import com.avispl.symphony.dal.aggregator.parser.AggregatedDeviceProcessor;
+import com.avispl.symphony.dal.aggregator.parser.PropertiesMapping;
+import com.avispl.symphony.dal.aggregator.parser.PropertiesMappingParser;
+import com.avispl.symphony.dal.communicator.RestCommunicator;
+import com.avispl.symphony.dal.communicator.logi.sync.data.Constants;
+import com.avispl.symphony.dal.communicator.logi.sync.http.LogiSyncCloudRequestInterceptor;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Logi Sync Cloud API communicator, it's communicating with {@link Constants.URI} endpoints to receive places and devices details.
@@ -129,7 +146,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
     /**
      * How much time last monitoring cycle took to finish
      * */
-    private Long lastMonitoringCycleDuration;
+    private Long lastMonitoringCycleDuration = 0L;
     //********* END Adapter Pacing section **********//
 
     /**
@@ -160,7 +177,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         private volatile boolean inProgress;
         public LogiSyncCloudDeviceDataLoader() {
         logDebugMessage("Creating new device data loader.");
-
             inProgress = true;
         }
 
@@ -169,12 +185,11 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         logDebugMessage("Entering device data loader active stage.");
             mainloop:
             while (inProgress) {
-                long startCycle = System.currentTimeMillis();
                 try {
                     try {
                         TimeUnit.MILLISECONDS.sleep(500);
                     } catch (InterruptedException e) {
-                        // Ignore for now
+                        logger.error("Startup idle period is interrupted.", e);
                     }
 
                     if (!inProgress) {
@@ -188,6 +203,7 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                         logDebugMessage("The device communicator is paused, data collector is not active.");
                         continue mainloop;
                     }
+                    long startCycle = System.currentTimeMillis();
                     try {
                         logDebugMessage("Fetching devices list.");
                         fetchDevicesList();
@@ -201,7 +217,8 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                         }
                         logger.error("Error occurred during device list retrieval: " + e.getMessage(), e);
                     }
-
+                    
+                    lastMonitoringCycleDuration = Math.max((System.currentTimeMillis() - startCycle) / 1000, 1L);
                     if (!inProgress) {
                         logDebugMessage("The data collection thread is not in progress. Breaking the loop.");
                         break mainloop;
@@ -219,15 +236,19 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
                         try {
                             TimeUnit.MILLISECONDS.sleep(1000);
                         } catch (InterruptedException e) {
-                            //
+                            logger.error("Idle period before new monitoring cycle is interrupted.", e);
                         }
                     }
-                    // We don't want to fetch devices statuses too often, so by default it's currentTime + 30s
+                    // We don't want to fetch devices statuses too often, so by default it's currentTime + 60s
                     // otherwise - the variable is reset by the retrieveMultipleStatistics() call, which
                     // launches devices detailed statistics collection
-                    nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + 30000;
+                    try {
+                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + (getMonitoringRate() * 60000L);
+                    } catch (NoSuchMethodError nsme) {
+                        nextDevicesCollectionIterationTimestamp = System.currentTimeMillis() + 60000L;
+                        logger.warn("Unsupported feature: getMonitoringRate isn't available on current Cloud Connector version.", nsme);
+                    }
 
-                    lastMonitoringCycleDuration = (System.currentTimeMillis() - startCycle) / 1000;
                     logDebugMessage("Finished collecting devices statistics cycle at " + new Date() + ", total duration: " + lastMonitoringCycleDuration);
                 } catch (Exception e) {
                     logger.error("Unexpected error occurred during main device collection cycle", e);
@@ -243,15 +264,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         public void stop() {
             logDebugMessage("Main device details collection loop is stopped!");
             inProgress = false;
-        }
-
-        /**
-         * Retrieves {@link #inProgress}
-         *
-         * @return value of {@link #inProgress}
-         */
-        public boolean isInProgress() {
-            return inProgress;
         }
     }
 
@@ -454,41 +466,6 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
     }
 
     @Override
-    public int ping() throws Exception {
-        if (!isInitialized()) {
-            throw new IllegalStateException("Cannot use device class without calling init() first");
-        }
-        if ("TCP".equals(getPingProtocol())) {
-            long pingResultTotal = 0L;
-
-            for (int i = 0; i < this.getPingAttempts(); i++) {
-                long startTime = System.currentTimeMillis();
-
-                try (Socket puSocketConnection = new Socket(this.getHost(), this.getPort())) {
-                    puSocketConnection.setSoTimeout(this.getPingTimeout());
-
-                    if (puSocketConnection.isConnected()) {
-                        long pingResult = System.currentTimeMillis() - startTime;
-                        pingResultTotal += pingResult;
-                        if (this.logger.isTraceEnabled()) {
-                            this.logger.trace(String.format("PING OK: Attempt #%s to connect to %s on port %s succeeded in %s ms", i + 1, this.getHost(), this.getPort(), pingResult));
-                        }
-                    } else {
-                        logDebugMessage(String.format("PING DISCONNECTED: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
-                        return this.getPingTimeout();
-                    }
-                } catch (SocketTimeoutException tex) {
-                    logDebugMessage(String.format("PING TIMEOUT: Connection to %s did not succeed within the timeout period of %sms", this.getHost(), this.getPingTimeout()));
-                    return this.getPingTimeout();
-                }
-            }
-            return Math.max(1, Math.toIntExact(pingResultTotal / this.getPingAttempts()));
-        } else {
-            return super.ping();
-        }
-    }
-
-    @Override
     protected RestTemplate obtainRestTemplate() throws Exception {
         if (sslContext == null) {
             throw new IllegalArgumentException("Unable to initialize mTLS sslContext: Please check apiKey and apiCertificate adapter properties.");
@@ -536,15 +513,18 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         Map<String, String> dynamicStatistics = new HashMap<>();
 
         dynamicStatistics.put(Constants.Properties.MONITORED_DEVICES_TOTAL, String.valueOf(aggregatedDevices.size()));
-        if (lastMonitoringCycleDuration != null) {
-            dynamicStatistics.put(Constants.Properties.MONITORING_CYCLE_DURATION, String.valueOf(lastMonitoringCycleDuration));
-        }
+        dynamicStatistics.put(Constants.Properties.MONITORING_CYCLE_DURATION, String.valueOf(lastMonitoringCycleDuration));
 
         statistics.put(Constants.Properties.ADAPTER_VERSION, adapterProperties.getProperty("aggregator.version"));
         statistics.put(Constants.Properties.ADAPTER_BUILD_DATE, adapterProperties.getProperty("aggregator.build.date"));
         long adapterUptime = System.currentTimeMillis() - adapterInitializationTimestamp;
         statistics.put(Constants.Properties.ADAPTER_UPTIME_MIN, String.valueOf(adapterUptime / (1000*60)));
         statistics.put(Constants.Properties.ADAPTER_UPTIME, normalizeUptime(adapterUptime/1000));
+        try {
+            statistics.put(Constants.Properties.MONITORING_CYCLE_INTERVAL, String.valueOf(getMonitoringRate()));
+        } catch (NoSuchMethodError nsme) {
+            logger.warn("Unsupported feature: getMonitoringRate isn't available on current Cloud Connector version.", nsme);
+        }
 
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setDynamicStatistics(dynamicStatistics);
@@ -646,13 +626,12 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
     }
 
     /**
-     * Uptime is received in seconds, need to normalize it and make it human-readable, like
-     * 1 day(s) 5 hour(s) 12 minute(s) 55 minute(s)
+     * Uptime is received in seconds, need to normalize it and make it human-readable, like 1 d 5 hr 12 min 55 sec.
      * Incoming parameter is may have a decimal point, so in order to safely process this - it's rounded first.
      * We don't need to add a segment of time if it's 0.
      *
      * @param uptimeSeconds value in seconds
-     * @return string value of format 'x day(s) x hour(s) x minute(s) x minute(s)'
+     * @return string value of format 'x d x hr x min x sec'
      */
     private String normalizeUptime(long uptimeSeconds) {
         StringBuilder normalizedUptime = new StringBuilder();
@@ -663,17 +642,18 @@ public class LogiSyncCloudCommunicator extends RestCommunicator implements Aggre
         long days = uptimeSeconds / 86400;
 
         if (days > 0) {
-            normalizedUptime.append(days).append(" day(s) ");
+            normalizedUptime.append(days).append(" d ");
         }
         if (hours > 0) {
-            normalizedUptime.append(hours).append(" hour(s) ");
+            normalizedUptime.append(hours).append(" hr ");
         }
         if (minutes > 0) {
-            normalizedUptime.append(minutes).append(" minute(s) ");
+            normalizedUptime.append(minutes).append(" min ");
         }
-        if (seconds > 0) {
-            normalizedUptime.append(seconds).append(" second(s)");
+        if (seconds > 0 || normalizedUptime.length() == 0) {
+            normalizedUptime.append(seconds).append(" sec");
         }
+
         return normalizedUptime.toString().trim();
     }
 
