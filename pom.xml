@@ -6,7 +6,7 @@
 
   <groupId>com.avispl.symphony.dal.communicator.logi.sync</groupId>
   <artifactId>symphony-dal-infrastructure-management-logi-synccloud</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <properties>
     <symphonyApiVersion>RELEASE</symphonyApiVersion>
     <timestamp>${maven.build.timestamp}</timestamp>
@@ -226,8 +226,14 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.84</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk18on</artifactId>
-      <version>1.79</version>
+      <version>1.84</version>
       <scope>compile</scope>
     </dependency>
     <!-- test dependencies -->
