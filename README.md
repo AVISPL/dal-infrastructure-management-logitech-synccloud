@@ -64,7 +64,7 @@ Logi Sync Cloud Aggregator monitored data consists of 2 parts: Aggregator extend
 
 Aggregator properties include service/adapter metadata: AdapterBuildDate, AdapterVersion, AdapterUptime, AdapterUptime(min), LastMonitoringCycleDuration(s), MonitoredDevicesTotal, MonitoringCycleInterval(mins).
 
-Aggregated Devices provide the following monitoring capabilities:
+Aggregated device properties include the following monitoring capabilities:
 
 | Property Type | Description |
 | --- | --- |
